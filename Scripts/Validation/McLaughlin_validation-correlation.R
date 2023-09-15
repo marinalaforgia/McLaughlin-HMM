@@ -86,4 +86,31 @@ stopCluster(cluster)
 
 colnames(sim.df) <- c("Species_Name", "p0", "g", "c", "s", "r", "iter")
 
-saveRDS(sim.df, "McL-sim.RDS")
+#saveRDS(sim.df, "McL-sim.RDS")
+
+sim.df <- filter(sim.df, iter < 150)
+
+sim.cor <- data.frame(cor = NA, p.value = NA)
+
+for(i in 1:50000){
+  tmp <- slice_sample(sim.df, n = 59, replace = F)
+  tmp.test <- cor.test(tmp$s, tmp$c)
+  sim.cor[i,]$cor <- tmp.test$estimate
+  sim.cor[i,]$p.value <- tmp.test$p.value
+}
+
+
+ggplot(sim.cor, aes(x = cor)) +
+  geom_histogram(bins = 20, col = "black", fill = "white") +
+  theme_classic() +
+  theme(
+    panel.border = element_rect(fill = NA, linewidth = 1),
+    axis.line = element_blank(),
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 10)
+  ) +
+  geom_vline(xintercept = -0.553, col = "red") + # correlation from real data is -0.553
+  labs(x = "simulated correlation coefficient")
+
+mean(sim.cor$cor)
+nrow(sim.cor[sim.cor$cor <= -0.553,])/nrow(sim.cor) #p value < 0.0001...?

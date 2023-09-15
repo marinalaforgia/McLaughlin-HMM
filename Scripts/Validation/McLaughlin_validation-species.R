@@ -100,6 +100,55 @@ sim.df <- foreach(j = rownames(mcl.df.q), .combine = rbind) %dopar% { # for each
 #Stop cluster
 stopCluster(cluster)
 
-colnames(sim.df) <- c("Species_Name", "p0", "g", "c", "s", "r", "iter","p0.sd", "g.sd", "c.sd", "s.sd", "r.sd", "iter.sd")
+colnames(sim.df) <- c("Species_Name", "p0.est", "g.est", "c.est", "s.est", "r.est", "iter.est","p0.sd", "g.sd", "c.sd", "s.sd", "r.sd", "iter.sd")
 
-saveRDS(sim.df, "McL-sim-species-validation.RDS")
+#saveRDS(sim.df, "McL-sim-species-validation.RDS")
+
+sim.df <- as.data.frame(sim.df)
+
+sim.df <- sim.df %>% 
+  dplyr::mutate(across(p0:iter.sd, ~as.numeric(.x)))
+
+mcl.sim.sp <- merge(sim.df, mcl.df.q, by = "Species_Name")
+
+ggplot(mcl.sim.sp, aes(y = s.est, x = s)) +
+  #geom_text(aes(label = Code)) +
+  geom_abline(slope = 1, intercept = 0, col = "red") +
+  geom_point() +
+  theme_classic() +
+    theme(
+    panel.border = element_rect(linewidth = 1, fill = NA),
+    axis.line = element_blank(),
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 12),
+  ) +
+  labs(x = "real s", y = "mean estimated s")
+  
+
+ggplot(mcl.sim.sp, aes(y = c.est, x = c)) +
+  #geom_text(aes(label = Code)) +
+  geom_point() +
+  geom_abline(slope = 1, intercept = 0, col = "red") +
+  geom_point() +
+  theme_classic() +
+    theme(
+    panel.border = element_rect(linewidth = 1, fill = NA),
+    axis.line = element_blank(),
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 12),
+  ) +
+  labs(x = "real c", y = "mean estimated c")
+
+ggplot(mcl.sim.sp, aes(y = g, x = g.est)) +
+  #geom_text(aes(label = Code)) +
+  geom_point() +
+  geom_abline(slope = 1, intercept = 0, col = "red") +
+  geom_point() +
+  theme_classic() +
+    theme(
+    panel.border = element_rect(linewidth = 1, fill = NA),
+    axis.line = element_blank(),
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 12),
+  ) +
+  labs(x = "real g", y = "mean estimated g")
